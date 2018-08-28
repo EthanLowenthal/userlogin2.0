@@ -1,0 +1,339 @@
+{% include 'head.html' %}
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<html>
+  <head>
+
+    <title>Manage Users</title>
+  </head>
+
+  <body style="background-color: #222">
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div class="container" style="margin-top: 30px; z-index:2; position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;">
+    {% for message in messages %}
+    <div class="alert alert-dismissible alert-success fade in" id="alert">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  {{ message }}
+</div>
+
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+  	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Welcome, {{ name }}</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarColor03">
+    <ul class="navbar-nav mr-auto">
+    	<li class="nav-item">
+        <a class="nav-link" href="login">Home</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+      <a class="btn btn-secondary my-2 my-sm-0" href="logout">Logout</a>
+    </form>
+  </div>
+</nav>
+
+
+  	<div class="container" style="margin-top: 30px">
+    
+
+    <div class="card border-secondary mb-3">
+  <div class="card-header"><h4>Accounts</h4></div>
+
+  <table class="table table-hover" id="userTable">
+  <thead>
+    <tr class="table-active">
+      <th scope="col">ID</th>
+      <th scope="col">Username</th>
+      <th scope="col">Password Hash</th>
+      <th scope="col">Is Admin</th>
+      <th scope="col"><a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#modalAddAccount" href="#">Add Account</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr class=" {% if user[1] == name %} table-secondary {% endif %}">
+      <th scope="row">{{ user[0] }}</th>
+      <td>{{ user[1] }}</td>
+      <td>{{ user[2].replace("pbkdf2:sha256:50000$", "")[:15] + ' [...] ' + user[2][-15:] }} </td>
+      <td>{{ True if user[3] else False }}</td>
+      <td><a class="btn {% if user[1] == name %} btn-light {% else %} btn-secondary {% endif %} btn-sm" data-toggle="modal" data-target="#modal{{ user[0] }}" href="#">manage</a></td>
+
+    </tr>
+</div>
+
+
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+    	
+	</div>
+</div>
+  </body>
+
+{% for user in users %}
+    <div class="modal fade" id="modal{{ user[0] }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{ user[1] }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="updateform{{ user[0] }}" method="post">
+        <input type="hidden" name="id" value="{{ user[0] }}">
+        <div class="modal-body">
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <label class="input-group-text" for="inputGroupSelect{{ user[0] }}">Update:</label>
+  </div>
+  <select class="custom-select" name="field" onChange="checkManage('{{ user[0] }}')" id="inputGroupSelect{{ user[0] }}">
+    <option value="username" selected>Username</option>
+    <option value="password">Password</option>
+  </select>
+</div>
+
+<div id="inputGroupSelectUsername{{ user[0] }}">
+<div class="input-group mb-3" >
+  <div class="input-group-prepend">
+    <span class="input-group-text">Username:</span>
+  </div>
+  <input type="text" class="form-control" name="username" onkeyup="checkManageUsername('{{ user[0] }}')" id="user{{ user[0] }}">
+</div>
+</div>
+
+<div id="inputGroupSelectPassword{{ user[0] }}" style="display: none">
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text">Password:</span>
+  </div>
+  <input type="password" class="form-control" name="password" onkeyup="checkManagePasswords('{{ user[0] }}')"  id="pass{{ user[0] }}">
+</div>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text">Repeat password:</span>
+  </div>
+  <input type="password" class="form-control" onkeyup="checkManagePasswords('{{ user[0] }}')" id="pass_{{ user[0] }}">
+</div>
+</div>
+
+  <div style="display: none;" id="invalidPassFeedback{{ user[0] }}" class="invalid-feedback">Passwords don't match!</div>
+  <div style="display: none;" id="invalidUserFeedback{{ user[0] }}" class="invalid-feedback">Username is already taken!</div>
+
+        </div>
+        <div class="modal-footer">
+          <a class="btn btn-danger" data-toggle="modal" data-target="#delete{{ user[0] }}">Delete</a>
+          {% if user[3] %}
+          <button onclick="submitForm('accounts/revokeAdmin', '{{ user[0] }}')" class="btn btn-danger">Revoke Admin</a>
+          {% else %}
+          <button onclick="submitForm('accounts/addAdmin', '{{ user[0] }}')" class="btn btn-success">Make Admin</a>
+          {% endif %}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button onclick="submitForm('accounts/update', '{{ user[0] }}')" id="submitManageAccount{{ user[0] }}"  class="btn btn-primary">Save changes</button>
+        </div>
+    </form>
+      </div>
+  </div>
+</div>
+
+  <div class="modal fade" id="delete{{ user[0] }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to delete {{ user[1] }}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <form action="accounts/delete" method="post">
+          <input type="hidden" name="id" value="{{ user[0] }}">
+          <input type="hidden" name="name" value="{{ user[1] }}">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endfor %}
+
+   <div class="modal fade" id="modalAddAccount" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Account</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="accounts/add" method="post">
+        <div class="modal-body">
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Username:</span>
+  </div>
+  <input type="text" class="form-control" onkeyup="checkUsername()" name="username" id="user">
+</div>
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Password:</span>
+  </div>
+  <input type="password" class="form-control" onkeyup="checkPasswords()" name="password" id="pass">
+</div>
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Repeat Password:</span>
+  </div>
+  <input type="password" class="form-control" onkeyup="checkPasswords()" name="password1" id="pass_">
+</div>
+
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" id="adminCheck" name="isAdmin">
+      <label class="custom-control-label" for="adminCheck">Is Admin</label>
+    </div>
+
+    <div style="display: none;" id="invalidPassFeedback" class="invalid-feedback">Passwords don't match!</div>
+    <div style="display: none;" id="invalidUserFeedback" class="invalid-feedback">Username is already taken!</div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" id="submitAddAccount" class="btn btn-primary">Add Account</button>
+        </div>
+    </form>
+      </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  function checkPasswords() {
+
+    if ($("#pass").val() != $("#pass_").val()) {
+      $('#invalidPassFeedback').show();
+      $("#submitAddAccount").attr("disabled", "disabled");
+      $("#pass").addClass("is-invalid");
+      $("#pass_").addClass("is-invalid");
+    }
+    else {
+      $('#invalidPassFeedback').hide();
+      $("#submitAddAccount").removeAttr("disabled");    
+      $("#pass").removeClass("is-invalid");
+      $("#pass_").removeClass("is-invalid");
+    }
+  }
+
+  function checkUsername() {
+    table = document.getElementById("userTable")
+    usernames = []
+    for (var r = 1, n = table.rows.length; r < n; r++) {
+        usernames.push(table.rows[r].cells[1].innerHTML);
+        
+    }
+
+    if (usernames.indexOf($( "#user" ).val()) > -1) {
+      $('#invalidUserFeedback').show();
+      $("#submitAddAccount").attr("disabled", "disabled");
+      $("#user").addClass("is-invalid");
+    }
+    else {
+      $('#invalidUserFeedback').hide();
+      $("#submitAddAccount").removeAttr("disabled");    
+      $("#user").removeClass("is-invalid");
+    }
+  }
+
+  function checkManage(id) {
+
+    var x = "#inputGroupSelect"+id
+    if ($(x).val() == "username") {
+      $("#inputGroupSelectUsername"+id).show();
+      $("#inputGroupSelectPassword"+id).hide();
+
+      $('#invalidPassFeedback'+id).hide();
+      $("submitManageAccount"+id).removeAttr("disabled");    
+      $("#pass"+id).removeClass("is-invalid");
+      $("#pass_"+id).removeClass("is-invalid");
+
+      checkManageUsername(id);
+
+    } else {
+      $("#inputGroupSelectUsername"+id).hide();
+      $("#inputGroupSelectPassword"+id).show();
+
+      checkManagePasswords(id);
+
+      $('#invalidUserFeedback'+id).hide();
+      $("#submitManageAccount"+id).removeAttr("disabled");    
+      $("#user"+id).removeClass("is-invalid");
+
+    }
+
+  }
+
+  function checkManageUsername(id) {
+    console.log(id);
+    table = document.getElementById("userTable")
+    usernames = []
+    for (var r = 1, n = table.rows.length; r < n; r++) {
+        usernames.push(table.rows[r].cells[1].innerHTML);
+        
+    }
+
+    if (usernames.indexOf($("#user"+id).val()) > -1) {
+      $('#invalidUserFeedback'+id).show();
+      $("#submitManageAccount"+id).attr("disabled", "disabled");
+      $("#user"+id).addClass("is-invalid");
+    }
+    else {
+      $('#invalidUserFeedback'+id).hide();
+      $("#submitManageAccount"+id).removeAttr("disabled");    
+      $("#user"+id).removeClass("is-invalid");
+    }
+  }
+
+    function checkManagePasswords(id) {
+    if ($("#pass"+id).val() != $("#pass_"+id).val()) {
+      $('#invalidPassFeedback'+id).show();
+      $("#submitManageAccount"+id).attr("disabled", "disabled");
+      $("#pass"+id).addClass("is-invalid");
+      $("#pass_"+id).addClass("is-invalid");
+    }
+    else {
+      $('#invalidPassFeedback'+id).hide();
+      $("#submitManageAccount"+id).removeAttr("disabled");    
+      $("#pass"+id).removeClass("is-invalid");
+      $("#pass_"+id).removeClass("is-invalid");
+    }
+  }
+
+  function submitForm(action, id) {
+        document.getElementById('updateform'+id).action = action;
+        document.getElementById('updateform'+id).submit();
+  }
+
+$("#alert").fadeTo(5000, 500).slideUp(500, function(){
+    $("#alert").slideUp(500);
+});
+
+</script>
+
+</html>

@@ -1,0 +1,28 @@
+{% include 'head.html' %}
+
+<form action="/check" method="POST">
+	<div style="padding: 50px">
+		<div class="jumbotron" style="margin: 20px auto; width: 300px;">
+				<center><h1>Login</h1></center>
+ 
+			<div style="text-align: center;">
+				<div class="form-group">
+				  <label class="col-form-label col-form-label-lg" for="login-name"></label>
+				  <input class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="text" name="username" placeholder="username">
+
+				  <label class="col-form-label col-form-label-lg" for="login-pass"></label>
+				  <input class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="password" name="password" placeholder="password">
+
+				  {% if 'wrong' in get_flashed_messages() %}
+				  	<div class="invalid-feedback">Incorrect username or password!</div>
+				  {% endif %}
+
+
+				</div>
+
+                <input type="submit" value="Log in" class="btn btn-primary btn-block">
+			    <br>
+			</div>
+		</div>
+	</div>
+</form>
