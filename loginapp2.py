@@ -5,12 +5,9 @@ from tabledef import User
 from subprocess import call
 import werkzeug
 from werkzeug.security import check_password_hash, generate_password_hash
-import cv2
-import time
 import random
 
 engine = create_engine('sqlite:///users.db', echo=True)
-cap = cv2.VideoCapture(0)
 app = Flask(__name__)
 app.secret_key = str(random.random())
 # app.config['SESSION_TYPE'] = 'filesystem'
