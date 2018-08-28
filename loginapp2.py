@@ -11,10 +11,6 @@ import jinja2
 engine = create_engine('sqlite:///users.db', echo=True)
 app = Flask(__name__)
 app.secret_key = str(random.random())
-check_hash = lambda x: check_password_hash(x[0], x[1])
-jinja2.filters.FILTERS['check_password_hash'] = check_hash
-jinja2.filters.FILTERS['generate_password_hash'] = generate_password_hash
-# app.config['SESSION_TYPE'] = 'filesystem'
 
  
 @app.route('/', methods=["GET"])
