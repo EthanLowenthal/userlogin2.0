@@ -1,33 +1,106 @@
-<h1>Register</h1>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}<br>
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.email.label }}<br>
-            {{ form.email(size=64) }}<br>
-            {% for error in form.email.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}<br>
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password2.label }}<br>
-            {{ form.password2(size=32) }}<br>
-            {% for error in form.password2.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+{% include 'head.html' %}
+
+<div align="left">
+<a href="login" class="btn btn-light" style="margin-top: 25px; margin-left: 20px">Login</a>
+</div>
+
+<div class="container" style="margin-top: 50px">
+<div class="jumbotron" style="margin: 20px auto; width: 800px;">
+ <h1 class="display-4" style="text-align: center;">Register</h1>
+<hr class="my-4">
+<form action="accounts/add" method="post">
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Username:</span>
+  </div>
+  <input type="text" class="form-control" onkeyup="checkUsername()" name="username" id="user">
+</div>
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Password:</span>
+  </div>
+  <input type="password" class="form-control" onkeyup="checkPasswords()" name="password" id="pass">
+</div>
+
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text" id="basic-addon3">Repeat Password:</span>
+  </div>
+  <input type="password" class="form-control" onkeyup="checkPasswords()" name="password1" id="pass_">
+</div>
+
+      <input type="hidden" value="off" id="adminCheck" name="isAdmin">
+
+    <div id="errorDiv" style="margin-bottom: 10px">
+        <div style="display: none;" id="invalidPassFeedback" class="invalid-feedback">Passwords don't match!</div>
+        <div style="display: none;" id="invalidUserFeedback" class="invalid-feedback">Username is already taken!</div>
+        <div style="display: none;" id="invalidUserBlank" class="invalid-feedback">Username cannot be blank!</div>
+    </div>
+
+
+  <button type="submit" id="submitAddAccount" class="btn btn-primary btn-block">Register</button>
+
+</form>
+</div>
+</div>
+
+<script type="text/javascript">
+  function checkPasswords() {
+
+    if ($("#pass").val() != $("#pass_").val()) {
+      $('#invalidPassFeedback').show();
+      $("#submitAddAccount").attr("disabled", "disabled");
+      $("#pass").addClass("is-invalid");
+      $("#pass_").addClass("is-invalid");
+    }
+    else {
+      $('#invalidPassFeedback').hide();
+      $("#submitAddAccount").removeAttr("disabled");    
+      $("#pass").removeClass("is-invalid");
+      $("#pass_").removeClass("is-invalid");
+    }
+  }
+
+  function checkUsername() {
+    if ($( "#user" ).val() == "") {
+        $('#invalidUserBlank').show();
+        $("#submitAddAccount").attr("disabled", "disabled");
+        $("#user").addClass("is-invalid");
+    } else {
+        $('#invalidUserBlank').hide();
+        $("#submitAddAccount").removeAttr("disabled");    
+        $("#user").removeClass("is-invalid");
+
+
+    }
+
+    $.ajax({ 
+        url: 'userExists', 
+        dataType: 'json',
+        data: {"username": $( "#user" ).val()},
+        type: 'POST',
+        success: function(data) {
+            if (data) {
+                $('#invalidUserFeedback').show();
+                $("#submitAddAccount").attr("disabled", "disabled");
+                $("#user").addClass("is-invalid");
+            } else {
+                if ($( "#user" ).val() != "") {
+                $("#user").removeClass("is-invalid");
+                $("#submitAddAccount").removeAttr("disabled");    
+            }
+                $('#invalidUserFeedback').hide();
+                
+            
+        }
+            
+        }
+    });
+
+    
+
+  }
+
+
+</script>

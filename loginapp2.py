@@ -6,10 +6,14 @@ from subprocess import call
 import werkzeug
 from werkzeug.security import check_password_hash, generate_password_hash
 import random
+import jinja2
 
 engine = create_engine('sqlite:///users.db', echo=True)
 app = Flask(__name__)
 app.secret_key = str(random.random())
+check_hash = lambda x: check_password_hash(x[0], x[1])
+jinja2.filters.FILTERS['check_password_hash'] = check_hash
+jinja2.filters.FILTERS['generate_password_hash'] = generate_password_hash
 # app.config['SESSION_TYPE'] = 'filesystem'
 
  
@@ -19,7 +23,18 @@ def home():
 		return redirect('login')
 	else:
 		return render_template('index.html', name=session.get('user')[1], isAdmin=session.get('user')[3])
-	
+
+@app.route('/userExists', methods=["POST"])
+def user():
+	Session = sessionmaker(bind=engine)
+	print(request.form)
+	s = Session()
+	query = s.query(User).filter(User.username.in_([request.form['username']]))
+	result = query.first()
+	if result:
+		return Response('true')
+	return Response('false')
+
 @app.route('/accounts', methods=["GET"])
 def manage():
 	if not session.get('logged_in'):
@@ -103,13 +118,7 @@ def delete():
 def add():
 	Session = sessionmaker(bind=engine)
 	s = Session()
-	try:
-		if request.form['isAdmin'] == 'on':
-			isAdmin = True
-	except werkzeug.exceptions.BadRequestKeyError:
-		isAdmin = False
-		
-	user = User(request.form['username'], request.form['password'],isAdmin=isAdmin)
+	user = User(request.form['username'], request.form['password'],isAdmin=True if request.form['isAdmin'] == 'on' else False)
 	s.add(user)
 	s.commit()
 	s.commit()
@@ -146,6 +155,14 @@ def check():
 		flash('wrong')
 
 	return redirect('')
+
+@app.route("/register", methods=["GET"])
+def register():
+	users = engine.execute('SELECT * FROM users')
+	u = []
+	for _r in users:
+		u.append(_r)
+	return render_template('register.html', users=u)
  
 @app.route("/logout")
 def logout():
@@ -154,4 +171,4 @@ def logout():
 	return redirect('login')
 
 if __name__ == "__main__":
-	app.run()
+	app.run(debug=True)

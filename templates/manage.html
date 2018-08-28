@@ -128,9 +128,13 @@
   <input type="password" class="form-control" onkeyup="checkManagePasswords('{{ user[0] }}')" id="pass_{{ user[0] }}">
 </div>
 </div>
+  
+          <div id="errorDiv" style="margin-bottom: 10px">
+        <div style="display: none;" id="invalidPassFeedback{{ user[0] }}" class="invalid-feedback">Passwords don't match!</div>
+        <div style="display: none;" id="invalidUserFeedback{{ user[0] }}" class="invalid-feedback">Username is already taken!</div>
+        <div style="display: none;" id="invalidUserBlank{{ user[0] }}" class="invalid-feedback">Username cannot be blank!</div>
+    </div>
 
-  <div style="display: none;" id="invalidPassFeedback{{ user[0] }}" class="invalid-feedback">Passwords don't match!</div>
-  <div style="display: none;" id="invalidUserFeedback{{ user[0] }}" class="invalid-feedback">Username is already taken!</div>
 
         </div>
         <div class="modal-footer">
@@ -211,8 +215,11 @@
       <label class="custom-control-label" for="adminCheck">Is Admin</label>
     </div>
 
-    <div style="display: none;" id="invalidPassFeedback" class="invalid-feedback">Passwords don't match!</div>
-    <div style="display: none;" id="invalidUserFeedback" class="invalid-feedback">Username is already taken!</div>
+        <div id="errorDiv" style="margin-bottom: 10px">
+        <div style="display: none;" id="invalidPassFeedback" class="invalid-feedback">Passwords don't match!</div>
+        <div style="display: none;" id="invalidUserFeedback" class="invalid-feedback">Username is already taken!</div>
+        <div style="display: none;" id="invalidUserBlank" class="invalid-feedback">Username cannot be blank!</div>
+    </div>
 
         </div>
         <div class="modal-footer">
@@ -242,23 +249,38 @@
   }
 
   function checkUsername() {
-    table = document.getElementById("userTable")
-    usernames = []
-    for (var r = 1, n = table.rows.length; r < n; r++) {
-        usernames.push(table.rows[r].cells[1].innerHTML);
-        
+    if ($( "#user" ).val() == "") {
+        $('#invalidUserBlank').show();
+        $("#submitAddAccount").attr("disabled", "disabled");
+        $("#user").addClass("is-invalid");
+    } else {
+        $('#invalidUserBlank').hide();
+        $("#submitAddAccount").removeAttr("disabled");    
+        $("#user").removeClass("is-invalid");
     }
 
-    if (usernames.indexOf($( "#user" ).val()) > -1) {
-      $('#invalidUserFeedback').show();
-      $("#submitAddAccount").attr("disabled", "disabled");
-      $("#user").addClass("is-invalid");
-    }
-    else {
-      $('#invalidUserFeedback').hide();
-      $("#submitAddAccount").removeAttr("disabled");    
-      $("#user").removeClass("is-invalid");
-    }
+    $.ajax({ 
+        url: 'userExists', 
+        dataType: 'json',
+        data: {"username": $( "#user" ).val()},
+        type: 'POST',
+        success: function(data) {
+            if (data) {
+                $('#invalidUserFeedback').show();
+                $("#submitAddAccount").attr("disabled", "disabled");
+                $("#user").addClass("is-invalid");
+            } else {
+                if ($( "#user" ).val() != "") {
+                $("#user").removeClass("is-invalid");
+                $("#submitAddAccount").removeAttr("disabled"); 
+
+            }
+                $('#invalidUserFeedback').hide();
+        }
+            
+        }
+    });
+
   }
 
   function checkManage(id) {
@@ -290,24 +312,37 @@
   }
 
   function checkManageUsername(id) {
-    console.log(id);
-    table = document.getElementById("userTable")
-    usernames = []
-    for (var r = 1, n = table.rows.length; r < n; r++) {
-        usernames.push(table.rows[r].cells[1].innerHTML);
-        
+    if ($( "#user"+id ).val() == "") {
+        $('#invalidUserBlank'+id).show();
+        $("#submitAddAccount"+id).attr("disabled", "disabled");
+        $("#user"+id).addClass("is-invalid");
+    } else {
+        $('#invalidUserBlank'+id).hide();
+        $("#submitAddAccount"+id).removeAttr("disabled");    
+        $("#user"+id).removeClass("is-invalid");
     }
 
-    if (usernames.indexOf($("#user"+id).val()) > -1) {
-      $('#invalidUserFeedback'+id).show();
-      $("#submitManageAccount"+id).attr("disabled", "disabled");
-      $("#user"+id).addClass("is-invalid");
-    }
-    else {
-      $('#invalidUserFeedback'+id).hide();
-      $("#submitManageAccount"+id).removeAttr("disabled");    
-      $("#user"+id).removeClass("is-invalid");
-    }
+    $.ajax({ 
+        url: 'userExists', 
+        dataType: 'json',
+        data: {"username": $( "#user"+id ).val()},
+        type: 'POST',
+        success: function(data) {
+            if (data) {
+                $('#invalidUserFeedback'+id).show();
+                $("#submitAddAccount"+id).attr("disabled", "disabled");
+                $("#user"+id).addClass("is-invalid");
+            } else {
+                if ($( "#user" ).val() != "") {
+                $("#user"+id).removeClass("is-invalid");
+                $("#submitAddAccount"+id).removeAttr("disabled"); 
+
+            }
+                $('#invalidUserFeedback'+id).hide();
+        }
+            
+        }
+    });
   }
 
     function checkManagePasswords(id) {
