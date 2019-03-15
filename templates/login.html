@@ -30,10 +30,10 @@
 			<div style="text-align: center;">
 				<div class="form-group">
 				  <label class="col-form-label col-form-label-lg" for="login-name"></label>
-				  <input class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="text" name="username" placeholder="username">
+				  <input autocomplete="username" class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="text" name="username" placeholder="username">
 
 				  <label class="col-form-label col-form-label-lg" for="login-pass"></label>
-				  <input class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="password" name="password" placeholder="password">
+				  <input autocomplete="current-password" class="form-control form-control {% if 'wrong' in get_flashed_messages() %} is-invalid {% endif %}" type="password" name="password" placeholder="password">
 
 				  {% if 'wrong' in get_flashed_messages() %}
 				  	<div class="invalid-feedback">Incorrect username or password!</div>

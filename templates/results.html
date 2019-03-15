@@ -1,0 +1,316 @@
+{% include 'head.html' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<body style="background-color: #222">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="container" style="margin-top: 30px; z-index:2; position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;">
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-success fade in" id="alert">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Welcome, {{ name }}</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarColor03">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="login">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="scout">Scout</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <a class="btn btn-secondary my-2 my-sm-0" href="logout">Logout</a>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 30px">
+
+        <div class="card border-secondary mb-3" id="myTab" role="tablist">
+            <div class="card-header">
+
+                <div class="flex-column flex-sm-row">
+
+                    <div class="d-flex justify-content-between">
+
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="table-tab" data-toggle="tab" href="#table" role="tab" aria-controls="table" aria-selected="true">Table</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="sheet-tab" data-toggle="tab" href="#sheet" role="tab" aria-controls="sheet" aria-selected="true">Spreadsheet</a>
+                            </li>
+                        </ul>
+
+
+
+
+                        <div class="col-xs-2">
+                            <input type="number" class="form-control bg-light text-white" onkeyup="search()" id="searchBar" placeholder="Search team numbers">
+                        </div>
+                        <button class="btn btn-secondary my-2 my-sm-0 " onclick="refresh()">Refresh</button>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="tab-content">
+
+                <div class="tab-pane active" id="table" role="tabpanel" aria-labelledby="table-tab">
+                    <table class="table table-hover" id="resultsTable">
+                        <thead>
+                            <tr class="table-active">
+                                <th scope="col">ID</th>
+                                <th scope="col">Number</th>
+                                <th scope="col">Entries</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if teams|length <= 0 %}
+                            <tr>
+                                <td>No Teams</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            {% endif %}
+                            {% for key, value in teams.items() %}
+                            <tr data-toggle="modal" data-target="#modal" onclick="getTeam({{ key }})">
+                                <th scope="row">{{ value[0] }}</th>
+                                <td>{{ key }}</td>
+                                <td>{{ value[1] }} </td>
+                                <td></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane" id="sheet" role="tabpanel" aria-labelledby="sheet-tab">
+
+                    <table class="table table-hover" id="sheetTable">
+                        <thead>
+                            <tr class="table-active">
+                                <th id="idSheet" scope="col">ID</th>
+                                <th id="numberSheet" scope="col">Number</th>
+                                <th scope="col">Drivetrain</th>
+                                <th scope="col">Drive Speed</th>
+                                <th scope="col">Hatch</th>
+                                <th scope="col">Climb</th>
+                                <th scope="col">Ball</th>
+                                <th scope="col">Driver Level</th>
+                                <th scope="col">Autonomous</th>
+                                <th scope="col">Notes</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sheetTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover" id="resultsTable">
+                    <thead>
+                        <tr class="table-active">
+                            <th scope="col">ID</th>
+                            <th scope="col">Number</th>
+                            <th scope="col">Drivetrain</th>
+                            <th scope="col">Drive Speed</th>
+                            <th scope="col">Hatch</th>
+                            <th scope="col">Climb</th>
+                            <th scope="col">Ball</th>
+                            <th scope="col">Driver Level</th>
+                            <th scope="col">Autonomous</th>
+                            <th scope="col">Notes</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsModalBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $('#myTab a[href="#table"]').on('click', function (e) {
+      e.preventDefault();
+      $(this).tab('show');
+    });
+    $('#myTab a[href="#sheet"]').on('click', function (e) {
+      e.preventDefault();
+        loadSpreadsheet();
+      $(this).tab('show');
+    });
+
+
+        $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    });
+    var loadedTeams = {};
+    var teams = {{ teams }};
+
+    function refresh() {
+        loadedTeams = {};
+        loadSpreadsheet();
+    }
+    function generateRow(team) {
+        var html = "";
+        for (var value in loadedTeams[team]) {
+             html = html + "<tr>\n" +
+            "<th scope=\"row\">" + loadedTeams[team][value][0] + "</th>\n" +
+            "<td>" + loadedTeams[team][value][1] + "</td>\n";
+                     if (loadedTeams[team][value][2].length > 15) {
+                        html = html + "<td data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + loadedTeams[team][value][2] + "\">" + loadedTeams[team][value][2].substring(0, 15) + " [...]</td>\n"
+                    } else {
+                        html = html + "<td>" + loadedTeams[team][value][2] + "</td>\n"
+                    }
+            html = html + "<td>" + loadedTeams[team][value][3] + " ft/s</td>\n" +
+            "<td>" + loadedTeams[team][value][4] + "/3</td>\n" +
+            "<td>" + loadedTeams[team][value][5] + "/3 </td>\n" +
+            "<td>" + loadedTeams[team][value][6] + "/3 </td>\n" +
+            "<td>" + loadedTeams[team][value][7] + "/10 </td>\n" +
+            "<td>" + loadedTeams[team][value][8] + "/10 </td>\n";
+            if (loadedTeams[team][value][9].length > 15) {
+                html = html + "<td data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + loadedTeams[team][value][9] + "\">" + loadedTeams[team][value][9].substring(0, 15) + " [...]</td>\n"
+            } else {
+                html = html + "<td>" + loadedTeams[team][value][9] + "</td>\n"
+            }
+            html = html + "<td>" + loadedTeams[team][value][10] + " </td>\n" +
+            "<td />\n" +
+            "</tr>"
+
+        }
+        return html
+    }
+    function addTeamToSheet(team) {
+        document.getElementById("sheetTableBody").innerHTML += generateRow(team);
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        });
+    }
+    function loadSpreadsheet() {
+        document.getElementById("sheetTableBody").innerHTML = "";
+        for (var team in teams) {
+            if (!(team in loadedTeams)) {
+                $.ajax({
+                url: "/results/" + team, success: function (result) {
+                    result = JSON.parse(result);
+                    loadedTeams[team] = result;
+                    addTeamToSheet(team);
+
+                    }
+                });
+            } else {
+                addTeamToSheet(team);
+            }
+
+        }
+    }
+    function setModalResult(team) {
+
+        document.getElementById("modalTitle").innerHTML = "Team " + loadedTeams[team][Object.keys(loadedTeams[team])[0]][1];
+        document.getElementById("resultsModalBody").innerHTML = generateRow(team);
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        });
+        $(".modal").modal('show');
+    }
+    function getTeam(team) {
+        if (team in loadedTeams) {
+            setModalResult(team);
+        } else {
+            $.ajax({
+                url: "/results/" + team, success: function (result) {
+                    result = JSON.parse(result);
+                    loadedTeams[team] = result;
+                    setModalResult(team);
+
+                }
+            });
+        }
+    }
+
+    function search() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("searchBar");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("resultsTable");
+      tr = table.getElementsByTagName("tr");
+      for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            $(tr[i]).show()
+          } else {
+            $(tr[i]).hide()
+          }
+        }
+      }
+      table = document.getElementById("sheetTable");
+      tr = table.getElementsByTagName("tr");
+      for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            $(tr[i]).show()
+          } else {
+            $(tr[i]).hide()
+          }
+        }
+      }
+    }
+
+    $("#alert").fadeTo(5000, 500).slideUp(500, function(){
+        $("#alert").slideUp(500);
+    });
+
+</script>
+<style>
+    .modal-lg {
+    max-width: 80% !important;
+    }
+    .modal-body {
+    position: relative;
+    overflow-y: auto;
+    max-height: 400px;
+    padding: 15px;
+    }
+    .card {
+    overflow-x:auto;
+    }
+</style>
+</html>
