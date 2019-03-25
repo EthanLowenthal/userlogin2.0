@@ -1,6 +1,6 @@
 {% include 'head.html' %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.min.js" integrity="sha256-nviKEC91moGfyFMMzT31WyNxuAvIIgOSkSGi7K6U7EU=" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/css/bootstrap-slider.min.css" integrity="sha256-+xqVrdbLgHjiKF8ULvcwzQ545r7lCVfOqXlNJCB3XOg=" crossorigin="anonymous" />
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/bootstrap-slider.min.js" integrity="sha256-nviKEC91moGfyFMMzT31WyNxuAvIIgOSkSGi7K6U7EU=" crossorigin="anonymous"></script>#}
+{#<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.1/css/bootstrap-slider.min.css" integrity="sha256-+xqVrdbLgHjiKF8ULvcwzQ545r7lCVfOqXlNJCB3XOg=" crossorigin="anonymous" />#}
 <html>
     <body style="background-color: #222">
         {% with messages = get_flashed_messages() %}
@@ -15,25 +15,7 @@
         </div>
         {% endif %}
         {% endwith %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Welcome, {{ name }}</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarColor03">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="login">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="results">Results</a>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-lg-0">
-                    <a class="btn btn-secondary my-2 my-sm-0" href="logout">Logout</a>
-                </form>
-            </div>
-        </nav>
+        {% include 'nav.html' %}
         <div class="container" style="margin-top: 30px">
             <div class="card border-secondary mb-3">
                 <div class="card-header">
@@ -41,7 +23,7 @@
                 </div>
                 <div class="container">
                     <br>
-                    <form id="form" action="results/add" method="post">
+                    <form id="form" action="http://localhost:5000/results/add" method="post">
                         <div class="form-group row">
                             <label for="teamNumber" class="col-sm-2 col-form-label">Team Number</label>
                             <div class="col-sm-10">
@@ -70,37 +52,37 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="hatch" class="col-sm-2 col-form-label">Hatch Level</label>
+                            <label for="hatch" class="col-sm-2 col-form-label">Hatch Height</label>
                             <div class="col-sm-10">
-                                <input id="hatch" name="hatch" type="text" data-slider-min="0" data-slider-max="3" data-slider-step="1" data-slider-value="0"/>
+                                <input id="hatch" name="hatch" type="range" class="custom-range col-md-2" min="0" max="3" value="0" step="1"/>
                                 <span id="hatchLabel"><span style="margin-left: 10px;" class="badge badge-dark" id="hatchVal">0/3</span></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="hatch" class="col-sm-2 col-form-label">Ball Level</label>
+                            <label for="hatch" class="col-sm-2 col-form-label">Ball Height</label>
                             <div class="col-sm-10">
-                                <input id="ball" name="ball" type="text" data-slider-min="0" data-slider-max="3" data-slider-step="1" data-slider-value="0"/>
+                                <input id="ball" name="ball" type="range" class="custom-range col-md-2" min="0" max="3" value="0" step="1"/>
                                 <span id="ballLabel"><span style="margin-left: 10px;" class="badge badge-dark" id="ballVal">0/3</span></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="climb" class="col-sm-2 col-form-label">Climber Level</label>
+                            <label for="climb" class="col-sm-2 col-form-label">Climber Height</label>
                             <div class="col-sm-10">
-                                <input id="climb" name="climb" type="text" data-slider-min="0" data-slider-max="3" data-slider-step="1" data-slider-value="0"/>
+                                <input id="climb" name="climb" type="range" class="custom-range col-md-2" min="0" max="3" value="0" step="1"/>
                                 <span id="climbLabel"><span style="margin-left: 10px;" class="badge badge-dark" id="climbVal">0/3</span></span>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="driver" class="col-sm-2 col-form-label">Driver Level</label>
+                            <label for="driver" class="col-sm-2 col-form-label">Driver Skill</label>
                             <div class="col-sm-10">
-                                <input id="driver" name="driver" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="1" data-slider-value="0"/>
+                                <input id="driver" name="driver" type="range" class="custom-range col-md-2" min="0" max="10" value="0" step="1"/>
                                 <span id="driverLabel"><span style="margin-left: 10px;" class="badge badge-dark" id="driverVal">0/10</span></span>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="auton" class="col-sm-2 col-form-label">Autonomous</label>
                             <div class="col-sm-10">
-                                <input id="auton" name="auton" type="text" data-slider-min="0" data-slider-max="10" data-slider-step="1" data-slider-value="0"/>
+                                <input id="auton" name="auton" type="range" class="custom-range col-md-2" min="0" max="10" value="0" step="1"/>
                                 <span id="autonLabel"><span style="margin-left: 10px;" class="badge badge-dark" id="autonVal">0/10</span></span>
                             </div>
                         </div>
@@ -112,7 +94,7 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-sm-10">
-                                <button onclick="submit()" id="submit" class="btn btn-secondary">Submit</button>
+                                <a onclick="submitForm()" class="btn btn-secondary">Submit</a>
                             </div>
                         </div>
                     </form>
@@ -121,59 +103,60 @@
         </div>
     </body>
     <script type="text/javascript">
-        $("#hatch").slider();
-        $("#hatch").on("slide", function(slideEvt) {
-        $("#hatchVal").text(slideEvt.value + "/3");
+        $("#hatch").on("change", function(slideEvt) {
+        $("#hatchVal").text( $("#hatch").val() + "/3");
+        });
+        $("#ball").on("change", function(slideEvt) {
+        $("#ballVal").text( $("#ball").val() + "/3");
+        });
+        $("#climb").on("change", function(slideEvt) {
+        $("#climbVal").text( $("#climb").val() + "/3");
+        });
+        $("#driver").on("change", function(slideEvt) {
+        $("#driverVal").text( $("#driver").val() + "/10");
+        });
+        $("#auton").on("change", function(slideEvt) {
+        $("#autonVal").text( $("#auton").val() + "/10");
         });
 
-        $("#ball").slider();
-        $("#ball").on("slide", function(slideEvt) {
-        $("#ballVal").text(slideEvt.value + "/3");
-        });
 
-        $("#climb").slider();
-        $("#climb").on("slide", function(slideEvt) {
-        $("#climbVal").text(slideEvt.value + "/3");
-        });
-
-        $("#driver").slider();
-        $("#driver").on("slide", function(slideEvt) {
-        $("#driverVal").text(slideEvt.value + "/10");
-        });
-
-        $("#auton").slider();
-        $("#auton").on("slide", function(slideEvt) {
-        $("#autonVal").text(slideEvt.value + "/10");
-        });
 
         $("#drivetrainOther").hide()
         function newDrivetrain() {
-        console.log("hi")
-        if ($("#drivetrain").val() == "Other") {
-          $("#drivetrainOther").show()
-        } else {
-           $("#drivetrainOther").hide()
-        }
+            if ($("#drivetrain").val() == "Other") {
+              $("#drivetrainOther").show()
+            } else {
+               $("#drivetrainOther").hide()
+            }
         }
 
-        $("#alert").fadeTo(5000, 500).slideUp(500, function(){
-        $("#alert").slideUp(500);
-        });
-        function submit() {
-            checkNumber();
-            document.getElementById("form").submit()
+
+
+        function submitForm() {
+            console.log(checkNumber())
+
+            if (checkNumber() == true) {
+                document.getElementById("form").submit()
+            }
         }
         function checkNumber() {
+            console.log("hi")
             if ($("#teamNumber").val() == "") {
                 $('#numberBlank').show();
                 $("#submit").attr("disabled", "disabled");
                 $("#teamNumber").addClass("is-invalid");
+                return false;
             } else {
                 $('#numberBlank').hide();
                 $("#submit").removeAttr("disabled");
                 $("#teamNumber").removeClass("is-invalid");
+                return true;
             }
         }
+
+                $("#alert").fadeTo(5000, 500).slideUp(500, function(){
+        $("#alert").slideUp(500);
+        });
 
 
     </script>

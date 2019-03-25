@@ -4,41 +4,16 @@
     <title>Welcome, {{ name }}</title>
   </head>
 
+    {% include 'nav.html' %}
+
+
   <body style="background-color: #222">
-
-  	<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Welcome, {{ name }}</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
-  <div class="collapse navbar-collapse" id="navbarColor03">
-    <ul class="navbar-nav mr-auto">
-      {% if isAdmin %}
-    	<li class="nav-item">
-        <a class="nav-link" href="accounts">Manage Accounts</a>
-      </li>
-      {% endif %}
-    <li class="nav-item">
-        <a class="nav-link" href="results">Results</a>
-      </li>
-    <li class="nav-item">
-        <a class="nav-link" href="scout">Scout</a>
-      </li>
-    </ul>
-    <form class="form-inline my-2 my-lg-0">
-      <a class="btn btn-secondary my-2 my-sm-0" href="logout">Logout</a>
-    </form>
-  </div>
-</nav>
     <div style="margin-top:1in" class="container">
         <div class="jumbotron">
             <center>
-                <h1 class="display-4">GRT Scouting</h1>
-                <br><br>
                 <a class="btn btn-secondary btn-lg btn-block" href="results" role="button">Results</a>
-                <a class="btn btn-secondary btn-lg btn-block" href="scout" role="button">Scout</a>
-                <a class="btn btn-secondary btn-lg btn-block" href="#" role="button">Matches</a>
+                <a class="btn btn-secondary btn-lg btn-block" href="scout" role="button">Pit Scouting</a>
+                <a class="btn btn-secondary btn-lg btn-block" href="search" role="button">Search Teams / Events</a>
             </center>
         </div>
     </div>

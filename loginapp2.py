@@ -5,6 +5,7 @@ from tabledef import User, Team
 from werkzeug.security import check_password_hash, generate_password_hash
 import random
 import json
+import re
 
 userEngine = create_engine('sqlite:///users.db', echo=True)
 userSession = sessionmaker(bind=userEngine)
@@ -25,7 +26,6 @@ def home():
 
 @app.route('/userExists', methods=["POST"])
 def user():
-	print(request.form)
 	s = userSession()
 	query = s.query(User).filter(User.username.in_([request.form['username']]))
 	result = query.first()
@@ -35,6 +35,7 @@ def user():
 	return Response('false')
 
 @app.route('/accounts', methods=["GET"])
+@app.route('/accounts/', methods=["GET"])
 def manage():
 	if not session.get('logged_in'):
 		return redirect('login')
@@ -44,26 +45,22 @@ def manage():
 	u = []
 	for _r in users:
 		u.append(_r)
-	return render_template("manage.html", name=session.get('user')[1], users=u)
+	return render_template("manage.html", name=session.get('user')[1], isAdmin=session.get('user')[3], users=u)
 
 @app.route('/scout', methods=["GET"])
+@app.route('/scout/', methods=["GET"])
 def scout():
 	if not session.get('logged_in'):
 		return redirect('login')
-	if not session.get('user')[3]:
-		return redirect('')
 
-	return render_template("scout.html")
+	return render_template("scout.html", name=session.get('user')[1], isAdmin=session.get('user')[3])
 
-@app.route('/results', methods=["GET"])
-@app.route('/results/<int:team>', methods=["GET"])
-def results(team=None):
-	if not session.get('logged_in'):
-		return redirect('login')
-
-	if team is not None:
+@app.route('/results/<string:team>/data', methods=["GET"])
+@app.route('/results/<string:team>/data/', methods=["GET"])
+def getTeamData(team):
+	if re.search("frc[0-9]+", team):
 		try:
-			result = teamEngine.execute('SELECT * FROM teams WHERE number = ' + str(team))
+			result = teamEngine.execute('SELECT * FROM teams WHERE number = ' + str(team.replace("frc", "")))
 			r = {}
 			for row in result:
 				r[row[0]] = list(row)
@@ -72,22 +69,71 @@ def results(team=None):
 		except:
 			return "Team Not Found"
 	else:
+		flash("Invalid Team Key")
+		return "Team Not Found"
 
+@app.route('/results/<string:team>', methods=["GET"])
+@app.route('/results/<string:team>/', methods=["GET"])
+def getTeam(team):
+	if not re.search("frc[0-9]+", team):
+		flash("Invalid Team Key")
+		return redirect("search")
+	return render_template("teamVeiwer.html", team=team, name=session.get('user')[1], isAdmin=session.get('user')[3])
+
+@app.route('/results', methods=["GET"])
+@app.route('/results/', methods=["GET"])
+def results():
+	if not session.get('logged_in'):
+		return redirect('login')
+	try:
 		teams = teamEngine.execute('SELECT * FROM teams')
 		t = {}
-		# e = {}
 		for r in teams:
 			if r[1] not in t:
 				t[r[1]] = [r[0], 0]
-				# e[r[1]] = []
 			t[r[1]][1] += 1
-			# e[r[1]].append(r)
+	except:
+		teams = {}
 
-		return render_template("results.html", name=session.get('user')[1], teams=t)
+	return render_template("results.html", name=session.get('user')[1], teams=t, isAdmin=session.get('user')[3])
+
+@app.route('/search', methods=["GET"])
+@app.route('/search/', methods=["GET"])
+def search():
+	return render_template("search.html", name=session.get('user')[1], isAdmin=session.get('user')[3])
+
+@app.route('/results/delete', methods=['POST'])
+def deleteResult():
+	if not session.get('logged_in'):
+		return redirect('login')
+	s = teamSession()
+	s.query(Team).filter_by(id=request.form['id']).delete()
+	s.commit()
+	s.commit()
+	s.close()
+	flash('Entry "{}" deleted!'.format(request.form['id']))
+	return redirect('results')
+
+@app.route('/results/add', methods=['POST'])
+def addResult():
+	s = teamSession()
+	team = Team(request.form["number"],
+				request.form["drivetrain"] if request.form["drivetrain"] != "Other" else request.form[
+					"drivetrainOther"],
+				request.form["speed"], request.form["hatch"], request.form["climb"],
+				request.form["ball"], request.form["driver"], request.form["auton"], request.form["comments"])
+	s.add(team)
+	s.commit()
+	s.commit()
+	s.close()
+	flash("Data saved!")
+	return redirect('scout')
 
 
 @app.route('/accounts/update', methods=['POST'])
 def update():
+	if not session.get('logged_in'):
+		return redirect('login')
 	field = str(request.form['field'])
 	value = str(request.form[field])
 	user_id = request.form['id']
@@ -107,6 +153,10 @@ def update():
 
 @app.route('/accounts/addAdmin', methods=['POST'])
 def addAdmin():
+	if not session.get('logged_in'):
+		return redirect('login')
+	if not session.get('user')[3]:
+		return redirect('')
 	user_id = request.form['id']
 
 	s = userSession()
@@ -120,18 +170,6 @@ def addAdmin():
 		for p in user: session['user'] = tuple(p)
 	return redirect('accounts')
 
-@app.route('/results/add', methods=['POST'])
-def addResult():
-	s = teamSession()
-	team = Team(request.form["number"], request.form["drivetrain"] if request.form["drivetrain"] != "Other" else request.form["drivetrainOther"],
-				request.form["speed"], request.form["hatch"], request.form["climb"],
-				request.form["ball"],  request.form["driver"], request.form["auton"],request.form["comments"])
-	s.add(team)
-	s.commit()
-	s.commit()
-	s.close()
-	flash("Data saved!")
-	return redirect('scout')
 
 @app.route('/accounts/revokeAdmin', methods=['POST'])
 def revokeAdmin():
@@ -150,8 +188,24 @@ def revokeAdmin():
 
 	return redirect('accounts')
 
+@app.route('/matches', methods=['GET'])
+@app.route('/matches/<string:match>', methods=['GET'])
+@app.route('/matches/<string:match>/', methods=['GET'])
+def matches(match=""):
+	if not session.get('logged_in'):
+		return redirect('login')
+	if re.search("[0-9]{4}[a-zA-Z]+", match):
+		return render_template('matches.html', match=match, name=session.get('user')[1], isAdmin=session.get('user')[3])
+	else:
+		flash("Invalid Match Key")
+		return redirect("search")
+
+
+
 @app.route('/accounts/delete', methods=['POST'])
-def delete():
+def deleteAccount():
+	if not session.get('logged_in'):
+		return redirect('login')
 	user_id = request.form['id']
 	username = request.form['name']
 
@@ -167,7 +221,6 @@ def delete():
 
 @app.route('/accounts/add', methods=['POST'])
 def add():
-	print(request.form)
 	s = userSession()
 	try:
 		user = User(request.form['username'], request.form['password'],isAdmin=True if request.form['isAdmin'] == 'on' else False)
@@ -211,6 +264,7 @@ def check():
 	s.close()
 	return redirect('')
 
+#TODO: check to see if we really need to send a list of users
 @app.route("/register", methods=["GET"])
 def register():
 	users = userEngine.execute('SELECT * FROM users')
