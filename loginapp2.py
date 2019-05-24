@@ -187,9 +187,10 @@ def login():
 		return redirect('')
 	return render_template('login.html')
 
-@app.route('/check', methods=['POST'])
+@app.route('/check', methods=['POST', 'GET'])
 def check():
-
+	if request.method.lower() == 'get':
+		return redirect('/')
 	POST_USERNAME = str(request.form['username'])
 	POST_PASSWORD = str(request.form['password'])
 
