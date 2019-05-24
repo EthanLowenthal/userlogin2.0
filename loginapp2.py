@@ -14,8 +14,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import time
 
+import platform
+
 admins = ['95024349']
 
+driver_path = './drivers/chromedriver_' + platform.system()
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 
@@ -137,7 +140,7 @@ def matches(match=""):
 		return redirect("search")
 
 def try_login(uname, password):
-	driver = webdriver.Chrome(chrome_options=chrome_options)
+	driver = webdriver.Chrome(driver_path, chrome_options=chrome_options)
 	driver.get("https://id.pausd.org/")
 
 	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'identification')))
