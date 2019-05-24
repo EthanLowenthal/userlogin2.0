@@ -1,11 +1,23 @@
-from flask import Flask, flash, redirect, render_template, request, session, Response
+from flask import Flask, flash, redirect, render_template, request, session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from tabledef import User, Team
-from werkzeug.security import check_password_hash, generate_password_hash
+from tabledef import Team
 import random
 import json
 import re
+
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
+import time
+
+admins = ['95024349']
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
 
 userEngine = create_engine('sqlite:///users.db', echo=True)
 userSession = sessionmaker(bind=userEngine)
@@ -16,36 +28,18 @@ teamSession = sessionmaker(bind=teamEngine)
 app = Flask(__name__)
 app.secret_key = str(random.random())
 
+@app.route("/logout")
+def logout():
+	session['logged_in'] = False
+	session['user'] = None
+	return redirect('login')
 
 @app.route('/', methods=["GET"])
 def home():
 	if not session.get('logged_in'):
 		return redirect('login')
 	else:
-		return render_template('index.html', name=session.get('user')[1], isAdmin=session.get('user')[3])
-
-@app.route('/userExists', methods=["POST"])
-def user():
-	s = userSession()
-	query = s.query(User).filter(User.username.in_([request.form['username']]))
-	result = query.first()
-	s.close()
-	if result:
-		return Response('true')
-	return Response('false')
-
-@app.route('/accounts', methods=["GET"])
-@app.route('/accounts/', methods=["GET"])
-def manage():
-	if not session.get('logged_in'):
-		return redirect('login')
-	if not session.get('user')[3]:
-		return redirect('')
-	users = userEngine.execute('SELECT * FROM users')
-	u = []
-	for _r in users:
-		u.append(_r)
-	return render_template("manage.html", name=session.get('user')[1], isAdmin=session.get('user')[3], users=u)
+		return render_template('index.html', name=session.get('user')[1])
 
 @app.route('/scout', methods=["GET"])
 @app.route('/scout/', methods=["GET"])
@@ -130,64 +124,6 @@ def addResult():
 	return redirect('scout')
 
 
-@app.route('/accounts/update', methods=['POST'])
-def update():
-	if not session.get('logged_in'):
-		return redirect('login')
-	field = str(request.form['field'])
-	value = str(request.form[field])
-	user_id = request.form['id']
-	s = userSession()
-	if field == 'password':
-		s.query(User).filter_by(id=user_id).update({field: generate_password_hash(value)})
-	else:
-		s.query(User).filter_by(id=user_id).update({field: value})
-	s.commit()
-	s.commit()
-	s.close()
-	if user_id == str(session.get('user')[0]):
-		user = userEngine.execute('SELECT * FROM users WHERE id = ?', (user_id))
-		for p in user: session['user'] = tuple(p)
-	flash(field.capitalize()+' updated!')
-	return redirect('accounts')
-
-@app.route('/accounts/addAdmin', methods=['POST'])
-def addAdmin():
-	if not session.get('logged_in'):
-		return redirect('login')
-	if not session.get('user')[3]:
-		return redirect('')
-	user_id = request.form['id']
-
-	s = userSession()
-	s.query(User).filter_by(id=user_id).update({"isAdmin": True})
-	s.commit()
-	s.commit()
-	s.close()
-	flash('Admin privileges added!')
-	if user_id == str(session.get('user')[0]):
-		user = userEngine.execute('SELECT * FROM users WHERE id = ?', (user_id))
-		for p in user: session['user'] = tuple(p)
-	return redirect('accounts')
-
-
-@app.route('/accounts/revokeAdmin', methods=['POST'])
-def revokeAdmin():
-	user_id = request.form['id']
-
-	s = userSession()
-	s.query(User).filter_by(id=user_id).update({"isAdmin": False})
-	s.commit()
-	s.commit()
-	s.close()
-	flash('Admin privileges revoked!')
-	if user_id == str(session.get('user')[0]):
-		user = userEngine.execute('SELECT * FROM users WHERE id = ?', (user_id))
-		for p in user: session['user'] = tuple(p)
-		return redirect('')
-
-	return redirect('accounts')
-
 @app.route('/matches', methods=['GET'])
 @app.route('/matches/<string:match>', methods=['GET'])
 @app.route('/matches/<string:match>/', methods=['GET'])
@@ -200,41 +136,46 @@ def matches(match=""):
 		flash("Invalid Match Key")
 		return redirect("search")
 
+def try_login(uname, password):
+	driver = webdriver.Chrome(chrome_options=chrome_options)
+	driver.get("https://id.pausd.org/")
 
+	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'identification')))
+	loginid = driver.find_element_by_id('identification')
+	loginid.send_keys(uname)
+	driver.find_element_by_id('authn-go-button').click()
 
-@app.route('/accounts/delete', methods=['POST'])
-def deleteAccount():
-	if not session.get('logged_in'):
-		return redirect('login')
-	user_id = request.form['id']
-	username = request.form['name']
-
-	s = userSession()
-	s.query(User).filter_by(id=user_id).delete()
-	s.commit()
-	s.commit()
-	s.close()
-	flash('Account "{}" deleted!'.format(username))
-	if username == session.get('user')[1]:
-		return redirect('logout')
-	return redirect('accounts')
-
-@app.route('/accounts/add', methods=['POST'])
-def add():
-	s = userSession()
+	time.sleep(0.3)
 	try:
-		user = User(request.form['username'], request.form['password'],isAdmin=True if request.form['isAdmin'] == 'on' else False)
-	except:
-		user = User(request.form['username'], request.form['password'],
-					isAdmin=False)
-	s.add(user)
-	s.commit()
-	s.commit()
-	s.close()
-	flash('Account "{}" created!'.format(request.form['username']))
-	return redirect('accounts')
+		driver.find_element_by_class_name('error-message')
+		return None, False
+	except NoSuchElementException:
+		pass
 
+	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, '//*[@type="password"]')))
+	passwd = driver.find_element_by_xpath('//*[@type="password"]')
+	passwd.send_keys(password)
+	driver.find_element_by_id('authn-go-button').click()
 
+	time.sleep(0.3)
+	try:
+		driver.find_element_by_class_name('error-message')
+		return None, False
+	except NoSuchElementException:
+		pass
+
+	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.CLASS_NAME, 'cs-logo-container')))
+	driver.find_element_by_xpath('//*[@title="IC Portal"]').click()
+	time.sleep(1)
+	driver.switch_to.window(driver.window_handles[1])
+
+	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'frameDetail')))
+	iframe = driver.find_element_by_id("frameDetail")
+	driver.switch_to.frame(iframe)
+	WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, '//*[@id="userName"]/span')))
+	name = driver.find_element_by_xpath('//*[@id="userName"]')
+	name = name.get_attribute('innerHTML').replace('<span class="welcome">Welcome</span>', '')
+	return name, True
 
 @app.route('/login', methods=['GET'])
 def login():
@@ -248,36 +189,18 @@ def check():
 
 	POST_USERNAME = str(request.form['username'])
 	POST_PASSWORD = str(request.form['password'])
-	s = userSession()
 
-	query = s.query(User).filter(User.username.in_([POST_USERNAME]))
-	result = query.first()
-	if result is not None:
-		if check_password_hash(result.password, POST_PASSWORD):
-			session['logged_in'] = True
-			user = userEngine.execute('SELECT * FROM users WHERE username = ?', (POST_USERNAME))
-			for p in user: session['user'] = tuple(p)
-		else:
-			flash('wrong')
+	name, valid = try_login(POST_USERNAME, POST_PASSWORD)
+
+	if valid:
+		session['logged_in'] = True
+		isAdmin = POST_USERNAME in admins
+		session['user'] = (POST_USERNAME, name, None, isAdmin)
+
 	else:
-			flash('wrong')
-	s.close()
-	return redirect('')
+		flash('wrong')
 
-#TODO: check to see if we really need to send a list of users
-@app.route("/register", methods=["GET"])
-def register():
-	users = userEngine.execute('SELECT * FROM users')
-	u = []
-	for _r in users:
-		u.append(_r)
-	return render_template('register.html', users=u)
- 
-@app.route("/logout")
-def logout():
-	session['logged_in'] = False
-	session['user'] = None
-	return redirect('login')
+	return redirect('')
 
 if __name__ == "__main__":
 	app.run(debug=True)
