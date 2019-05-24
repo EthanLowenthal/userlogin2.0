@@ -16,11 +16,11 @@ import time
 
 import platform
 
-admins = ['95024349']
-
 driver_path = './drivers/chromedriver_' + platform.system()
 chrome_options = Options()
 chrome_options.add_argument("--headless")
+
+admins = ['95024349']
 
 userEngine = create_engine('sqlite:///users.db', echo=True)
 userSession = sessionmaker(bind=userEngine)
