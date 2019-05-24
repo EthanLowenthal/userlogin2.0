@@ -1,0 +1,243 @@
+{% include 'head.html' %}
+
+<body style="background-color: #222">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="container" style="margin-top: 30px; z-index:2; position:absolute; margin-left: auto; margin-right: auto; left: 0; right: 0;">
+        {% for message in messages %}
+        <div class="alert alert-dismissible alert-success fade in" id="alert">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+{% include 'nav.html' %}
+
+    <div class="container" style="margin-top: 30px">
+
+    <div id="accordion">
+  <div class="card">
+    <div class="card-header" id="teamsCollapseHeading">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#teamsCollapse" aria-expanded="true" aria-controls="teamsCollapse">
+          Teams
+        </button>
+      </h5>
+    </div>
+
+    <div id="teamsCollapse" class="collapse show" aria-labelledby="teamsCollapseHeading" data-parent="#accordion">
+      <div class="card-body">
+
+        <div class="list-group " >
+        <button type="button" id="teamsListHeader" class="list-group-item active"></button>
+            <div id="teamsList"></div>
+        </div>
+    </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="card">
+    <div class="card-header" id="matchesCollapseHeading">
+      <h5 class="mb-0">
+                    <div class="d-flex justify-content-between">
+
+        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#matchesCollapse" aria-expanded="false" aria-controls="matchesCollapse">
+          Matches
+        </button>
+
+          <div class="col-xs-2">
+            <input type="number" class="form-control bg-light text-white" onkeyup="searchMatches()" id="matchesSearch" placeholder="Search team numbers">
+        </div>
+          </div>
+      </h5>
+    </div>
+    <div id="matchesCollapse" class="collapse" aria-labelledby="matchesCollapse" data-parent="#accordion">
+      <div class="card-body">
+          <div id="matchesTable"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="card">
+    <div class="card-header" id="headingThree">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          Collapsible Group Item #3
+        </button>
+      </h5>
+    </div>
+    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+      <div class="card-body">
+        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+
+<script type="text/javascript">
+getEventInfo("{{ match }}");
+    function getEventInfo(eventKey) {
+            $.ajax({
+                url: "https://www.thebluealliance.com/api/v3/event/"+eventKey+"/teams/simple",
+                headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+                    success: function (teams) {
+                    var html = "";
+
+                    for (var team in teams) {
+                        html += "<a href=\"http://localhost:5000/results/frc"+teams[team]["team_number"] +"\" class=\"list-group-item list-group-item-action\">" +
+                            teams[team]["team_number"] + " | " + teams[team]["nickname"]
+                        "</a>\n"
+                    }
+                    document.getElementById("teamsList").innerHTML = html;
+
+                }});
+
+                $.ajax({
+                url: "https://www.thebluealliance.com/api/v3/event/"+eventKey,
+                headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+                    success: function (event) {
+                    document.getElementById("teamsListHeader").innerHTML = event["name"] + " | Teams";
+
+                }});
+
+                $.ajax({
+                url: "https://www.thebluealliance.com/api/v3/event/"+eventKey+"/matches",
+                headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+                    success: function (event) {
+                    if (event.length <= 0) {
+                    } else {
+                        html = "";
+
+                        for (e in event){
+
+                            html += "<table class=\"table table-bordered\">\n" +
+                                "    <thead>\n" +
+                                "    <tr>\n" +
+                                "      <th scope=\"col\"></th>\n" +
+                                "      <th scope=\"col\" ";
+                            if (event[e]["winning_alliance"] == "blue") {
+                                html += "class=\"bg-warning\""
+                            }
+
+                            html += ">Blue</th>\n" +
+                                "      <th scope=\"col\" ";
+                            if (event[e]["winning_alliance"] == "red") {
+                                html += "class=\"bg-warning\""
+                            }
+
+                            html +=">Red</th>\n" +
+                                "    </tr>\n" +
+                                "  </thead>\n" +
+                                "  <tbody>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Teams</th>\n" +
+                                "      <td class=\"bg-primary\">";
+                            for (team in event[e]["alliances"]["blue"]["team_keys"]) {
+                                html += "<a href=\"/results/"+ event[e]["alliances"]["blue"]["team_keys"][team] +"\">"+ event[e]["alliances"]["blue"]["team_keys"][team].replace("frc", "") +"</a>, "
+                            }
+
+
+                            html += "</td>\n" +
+                                "      <td class=\"bg-danger\">";
+
+                            for (team in event[e]["alliances"]["red"]["team_keys"]) {
+                                html += "<a href=\"/results/"+ event[e]["alliances"]["red"]["team_keys"][team] +"\">"+ event[e]["alliances"]["red"]["team_keys"][team].replace("frc", "") +"</a>, "
+                            }
+
+                            html += "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Total Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["totalPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["totalPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Teleop Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["teleopPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["teleopPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Auto Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["autoPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["autoPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Cargo Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["cargoPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["cargoPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Climb Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["habClimbPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["habClimbPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Hatch Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["hatchPanelPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["hatchPanelPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  <tr>\n" +
+                                "      <th scope=\"row\">Foul Points</th>\n" +
+                                "      <td class=\"bg-primary\">" +event[e]["score_breakdown"]["blue"]["foulPoints"]+ "</td>\n" +
+                                "      <td class=\"bg-danger\">" +event[e]["score_breakdown"]["red"]["foulPoints"]+ "</td>\n" +
+                                "    </tr>\n" +
+                                "  </tbody>\n" +
+                                "</table>"
+
+                        }
+                        document.getElementById("matchesTable").innerHTML = html;
+                        document.getElementById("matchesTable").innerHTML += "<tr class=\"no-results\"><th scope=\"row\">No Results</th></tr>"
+
+                    }
+
+                }
+
+
+                });
+    }
+
+        function searchMatches() {
+        var filter, table, tr, td, i, txtValue;
+        var resultFound = false;
+        filter = $("#matchesSearch").val().toUpperCase();
+        table = document.getElementById("matchesTable");
+        tables = table.getElementsByTagName("table");
+        for (i = 0; i < tables.length; i++) {
+            td = tables[i].getElementsByTagName("tr")[1];
+            console.log(td)
+            if (td) {
+                if (td.innerHTML.indexOf(filter) > -1) {
+                    tables[i].style.display = "table";
+                    resultFound = true;
+                } else {
+                    tables[i].style.display = "none";
+                }
+            }
+        }
+        if (resultFound) {
+            $(".no-results").hide();
+        } else {
+            $(".no-results").show();
+        }
+    }
+
+
+
+
+    $("#alert").fadeTo(5000, 500).slideUp(500, function(){
+        $("#alert").slideUp(500);
+    });
+
+
+</script>
