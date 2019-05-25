@@ -6,21 +6,21 @@
         <div class="collapse navbar-collapse" id="navbarColor03">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="http://localhost:5000/login">Home</a>
+                    <a class="nav-link" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/login">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="http://localhost:5000/results">Souting Results</a>
+                    <a class="nav-link" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results">Souting Results</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="http://localhost:5000/search">Search Teams / Events</a>
+                    <a class="nav-link" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/search">Search Teams / Events</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="http://localhost:5000/scout">Pit Scouting</a>
+                    <a class="nav-link" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/scout">Match Scouting</a>
                 </li>
             </ul>
             <form class="form-inline my-2 my-lg-0">
-                <a class="btn btn-secondary my-2 my-sm-0" href="http://localhost:5000/logout">Logout</a>
+                <a class="btn btn-secondary my-2 my-sm-0" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/logout">Logout</a>
             </form>
         </div>
     </nav>

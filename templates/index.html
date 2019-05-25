@@ -23,9 +23,9 @@
     <div style="margin-top:1in" class="container">
         <div class="jumbotron">
             <center>
-                <a class="btn btn-secondary btn-lg btn-block" href="results" role="button">Results</a>
-                <a class="btn btn-secondary btn-lg btn-block" href="scout" role="button">Pit Scouting</a>
-                <a class="btn btn-secondary btn-lg btn-block" href="search" role="button">Search Teams / Events</a>
+                <a class="btn btn-secondary btn-lg btn-block" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results" role="button">Results</a>
+                <a class="btn btn-secondary btn-lg btn-block" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/scout" role="button">Scout a match</a>
+                <a class="btn btn-secondary btn-lg btn-block" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/search" role="button">Search Teams / Events</a>
             </center>
         </div>
     </div>

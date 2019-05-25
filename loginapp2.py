@@ -39,6 +39,7 @@ def logout():
 
 @app.route('/', methods=["GET"])
 def home():
+
 	if not session.get('logged_in'):
 		return redirect('login')
 	else:
@@ -182,10 +183,10 @@ def try_login(uname, password):
 
 @app.route('/login', methods=['GET'])
 def login():
-
 	if session.get('logged_in'):
 		return redirect('')
 	return render_template('login.html')
+
 
 @app.route('/check', methods=['POST', 'GET'])
 def check():
