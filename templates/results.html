@@ -74,16 +74,19 @@
                         <thead>
                             <tr class="table-active">
                                 <th id="idSheet" scope="col">ID</th>
-                                <th id="numberSheet" scope="col">Number</th>
+                                <th id="numberSheet" scope="col">Team #</th>
                                 <th scope="col">Drivetrain</th>
                                 <th scope="col">Drive Speed</th>
                                 <th scope="col">Hatch</th>
                                 <th scope="col">Climb</th>
                                 <th scope="col">Ball</th>
-                                <th scope="col">Driver Level</th>
+                                <th scope="col">Driver Skill</th>
                                 <th scope="col">Autonomous</th>
                                 <th scope="col">Notes</th>
+                                <th scope="col">Match #</th>
+                                <th scope="col">Event</th>
                                 <th scope="col">Date</th>
+
                             </tr>
                         </thead>
                         <tbody id="sheetTableBody">
@@ -110,15 +113,17 @@
                     <thead>
                         <tr class="table-active">
                             <th scope="col">ID</th>
-                            <th scope="col">Number</th>
+                            <th scope="col">Team #</th>
                             <th scope="col">Drivetrain</th>
                             <th scope="col">Drive Speed</th>
                             <th scope="col">Hatch</th>
                             <th scope="col">Climb</th>
                             <th scope="col">Ball</th>
-                            <th scope="col">Driver Level</th>
+                            <th scope="col">Driver Skill</th>
                             <th scope="col">Autonomous</th>
                             <th scope="col">Notes</th>
+                            <th scope="col">Match #</th>
+                            <th scope="col">Event</th>
                             <th scope="col">Date</th>
                         </tr>
                     </thead>
@@ -226,6 +231,8 @@
             } else {
                 html += "<td>" + loadedTeams[team][value][9] + "</td>\n"
             }
+            html += "<td>" + loadedTeams[team][value][11] + " </td>\n"
+            html += "<td><a href=\"../matches/"+ loadedTeams[team][value][13] +"\">" + loadedTeams[team][value][12] + "</a></td>\n"
             html += "<td>" + loadedTeams[team][value][10] + " </td>\n" +
             "<td><a class=\"btn btn-outline-danger btn-sm\" onclick=\"deleteEntry("+loadedTeams[team][value][0]+")\">Delete</a></td>\n" +
             "</tr>"

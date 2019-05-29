@@ -27,8 +27,25 @@
                         <div class="form-group row">
                             <label for="teamNumber" class="col-sm-2 col-form-label">Team Number</label>
                             <div class="col-sm-10">
-                                <input type="number" onkeyup="checkNumber()" class="form-control" name="number" id="teamNumber" placeholder="192">
-                                <div style="display: none;" id="numberBlank" class="invalid-feedback">Number cannot be blank!</div>
+                                <input type="number" onkeyup="checkNumber('team')" class="form-control" name="number" id="teamNumber" placeholder="192" style="width: 10em">
+                                <div style="display: none;" id="numberBlankteam" class="invalid-feedback">Number cannot be blank!</div>
+                            </div>
+                            <label for="matchNumber" class="col-sm-2 col-form-label">Match Number</label>
+                            <div class="col-sm-10">
+                                <input type="number" onkeyup="checkNumber('match')" class="form-control" name="match" id="matchNumber" placeholder="0" style="width: 10em">
+                                <div style="display: none;" id="numberBlankmatch" class="invalid-feedback">Number cannot be blank!</div>
+                            </div>
+                            <label for="eventNumber" class="col-sm-2 col-form-label">Event</label>
+                            <div class="col-sm-10" onmouseleave="$('#searchResults').html('')">
+                                  <div class="alert alert-secondary" id="eventDisplay" style="width: auto">
+                                  </div>
+                                <input type="text" onfocus="searchEvent()" onkeyup="searchEvent()" class="form-control" id="eventSearchBar" placeholder="Silicon Valley Regional" style="max-width: 30em">
+                                <div class="list-group" style="position:absolute; width: 60%;margin-left: 7.5%;z-index: 1000;" id="searchResults">
+</div>
+                                <input type="hidden" name="eventNumber" value="" id="eventInput">
+                                <input type="hidden" name="eventName" value="" id="eventInputName">
+
+                                <div style="display: none;" id="eventBlank" class="invalid-feedback">Event cannot be blank!</div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -94,7 +111,7 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-sm-10">
-                                <a onclick="submitForm()" class="btn btn-secondary">Submit</a>
+                                <button onclick="submitForm()" class="btn btn-secondary" id="submit_btn">Submit</button>
                             </div>
                         </div>
                     </form>
@@ -131,25 +148,32 @@
         }
 
 
-
+        function checkEvent() {
+            if ($('#eventInput').val() == "") {
+                $('#eventBlank').show();
+                $("#submit_btn").attr("disabled", "disabled");
+                return false;
+            } else {
+                $('#eventBlank').hide();
+                $("#submit_btn").removeAttr("disabled");
+                return true;
+            }
+        }
         function submitForm() {
-            console.log(checkNumber())
-
-            if (checkNumber() == true) {
+            if ((checkNumber('team') && checkNumber('match')) && checkEvent()) {
                 document.getElementById("form").submit()
             }
         }
-        function checkNumber() {
-            console.log("hi")
-            if ($("#teamNumber").val() == "") {
-                $('#numberBlank').show();
-                $("#submit").attr("disabled", "disabled");
-                $("#teamNumber").addClass("is-invalid");
+        function checkNumber(m) {
+            if ($("#"+m+"Number").val() == "") {
+                $('#numberBlank'+m).show();
+                $("#submit_btn").attr("disabled", "disabled");
+                $("#"+m+"Number").addClass("is-invalid");
                 return false;
             } else {
-                $('#numberBlank').hide();
-                $("#submit").removeAttr("disabled");
-                $("#teamNumber").removeClass("is-invalid");
+                $('#numberBlank'+m).hide();
+                $("#submit_btn").removeAttr("disabled");
+                $("#"+m+"Number").removeClass("is-invalid");
                 return true;
             }
         }
@@ -157,6 +181,43 @@
                 $("#alert").fadeTo(5000, 500).slideUp(500, function(){
         $("#alert").slideUp(500);
         });
+
+        var events = [];
+        $.ajax({
+            url: "https://www.thebluealliance.com/api/v3/events/2019/simple",
+            headers: {"X-TBA-Auth-Key": "1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+            success: function (e) {
+                events = e;
+            }
+        });
+        $("#eventDisplay").hide();
+        function deleteCurrentEvent() {
+            $("#eventSearchBar").show();
+            $("#eventDisplay").hide();
+            $("#eventInput").val("");
+            $("#eventInputName").val("");
+        }
+        function selectEvent(key, name) {
+            $("#eventDisplay").html(name + "<button type=\"button\" class=\"close\" onclick=\"deleteCurrentEvent()\">\n" +
+                                            "<span aria-hidden=\"true\">&times;</span>\n" +
+                                            "</button>").show();
+            $("#eventSearchBar").hide().val("");
+            $("#eventInput").val(key);
+            $("#eventInputName").val(name);
+            checkEvent();
+        }
+        function searchEvent() {
+            $("#searchResults").html("");
+            var found = events.filter(function (element) {
+                 return element.name.toLowerCase().includes($("#eventSearchBar").val().toLowerCase());
+             });
+            for (var i=0;i<10;i++){
+                if (i > found.length) {
+                    break;
+                }
+                $("#searchResults").append('<btn class="list-group-item list-group-item-action" onclick="selectEvent(\''+found[i].key+'\', \''+found[i].name+'\')">'+found[i].name+'</btn>')
+            }
+        }
 
 
     </script>

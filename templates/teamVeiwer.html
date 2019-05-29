@@ -71,6 +71,8 @@
                             <th scope="col">Driver Level</th>
                             <th scope="col">Autonomous</th>
                             <th scope="col">Notes</th>
+                            <th scope="col">Match #</th>
+                            <th scope="col">Event</th>
                             <th scope="col">Date</th>
                         </tr>
                     </thead>
@@ -247,6 +249,8 @@ $.ajax({
             } else {
                 html += "<td>" + entries[value][9] + "</td>\n"
             }
+            html += "<td>" + entries[value][11] + " </td>\n"
+            html += "<td><a href=\"../matches/"+ entries[value][13] +"\">" + entries[value][12] + "</a></td>\n"
             html += "<td>" + entries[value][10] + " </td>\n" +
             "<td><a class=\"btn btn-outline-danger btn-sm\" onclick=\"deleteEntry("+entries[value][0]+")\">Delete</a></td>\n" +
             "</tr>"

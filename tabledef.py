@@ -39,8 +39,11 @@ class Team(teamBase):
     autonomous = Column(Integer)
     notes = Column(String)
     date = Column(DateTime, default=datetime.datetime.utcnow)
+    match = Column(Integer)
+    event = Column(String)
+    eventID = Column(String)
 
-    def __init__(self, number, drivetrain, driveSpeed, hatch, climb, ball, driverLevel, autonomous, notes):
+    def __init__(self, number, drivetrain, driveSpeed, hatch, climb, ball, driverLevel, autonomous, notes, match, event, eventID):
         self.number = number
         self.drivetrain = drivetrain
         self.driveSpeed = driveSpeed
@@ -50,6 +53,9 @@ class Team(teamBase):
         self.driverLevel = driverLevel
         self.autonomous = autonomous
         self.notes = notes
+        self.match = match
+        self.event = event
+        self.eventID = eventID
 
 
 # create tables

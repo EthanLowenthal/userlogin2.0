@@ -58,6 +58,9 @@ def scout():
 @app.route('/results/<string:team>/data', methods=["GET"])
 @app.route('/results/<string:team>/data/', methods=["GET"])
 def getTeamData(team):
+	if not session.get('logged_in'):
+		return redirect('login')
+
 	if re.search("frc[0-9]+", team):
 		try:
 			result = teamEngine.execute('SELECT * FROM teams WHERE number = ' + str(team.replace("frc", "")))
@@ -75,12 +78,12 @@ def getTeamData(team):
 @app.route('/results/<string:team>', methods=["GET"])
 @app.route('/results/<string:team>/', methods=["GET"])
 def getTeam(team):
+	if not session.get('logged_in'):
+		return redirect('login')
+
 	if not re.search("frc[0-9]+", team):
 		flash("Invalid Team Key")
 		return redirect("search")
-
-	if not session.get('logged_in'):
-		return redirect('login')
 
 	return render_template("teamVeiwer.html", team=team)
 
@@ -104,11 +107,12 @@ def results():
 @app.route('/search', methods=["GET"])
 @app.route('/search/', methods=["GET"])
 def search():
+	if not session.get('logged_in'):
+		return redirect('login')
 	return render_template("search.html", name=session.get('user')[1], isAdmin=session.get('user')[3])
 
 @app.route('/results/delete', methods=['POST'])
 def deleteResult():
-	print(request.form)
 	if not session.get('logged_in'):
 		return redirect('login')
 	s = teamSession()
@@ -121,12 +125,15 @@ def deleteResult():
 
 @app.route('/results/add', methods=['POST'])
 def addResult():
+	if not session.get('logged_in'):
+		return redirect('login')
 	s = teamSession()
 	team = Team(request.form["number"],
 				request.form["drivetrain"] if request.form["drivetrain"] != "Other" else request.form[
 					"drivetrainOther"],
 				request.form["speed"], request.form["hatch"], request.form["climb"],
-				request.form["ball"], request.form["driver"], request.form["auton"], request.form["comments"])
+				request.form["ball"], request.form["driver"], request.form["auton"], request.form["comments"],
+				request.form["match"], request.form["eventName"], request.form["eventNumber"])
 	s.add(team)
 	s.commit()
 	s.commit()
