@@ -16,7 +16,7 @@
 {% endwith %}
 
 
-<form action="/check" method="POST">
+<form action="/check" method="POST" onsubmit="$('#submit_btn').val('Authenticating ...')">
 	<div style="padding: 50px">
 		<div class="jumbotron" style="margin: 20px auto; width: 300px;">
 				<center><h1>Login</h1><br>Use your RapidID account</center>
@@ -36,7 +36,7 @@
 
 				</div>
 
-                <input type="submit" value="Log in" class="btn btn-primary btn-block">
+                <input id="submit_btn" type="submit" value="Log in" class="btn btn-primary btn-block">
 			    <br>
 			</div>
 		</div>
@@ -47,4 +47,5 @@
 	$("#alert").fadeTo(5000, 500).slideUp(500, function(){
     $("#alert").slideUp(500);
 });
+
 </script>

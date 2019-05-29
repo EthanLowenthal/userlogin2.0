@@ -23,7 +23,7 @@
                 </div>
                 <div class="container">
                     <br>
-                    <form id="form" action="http://localhost:5000/results/add" method="post">
+                    <form id="form" action="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/add" method="post">
                         <div class="form-group row">
                             <label for="teamNumber" class="col-sm-2 col-form-label">Team Number</label>
                             <div class="col-sm-10">

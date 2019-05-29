@@ -37,6 +37,8 @@
     <button class="btn btn-secondary" onclick="search()" type="button">Search</button>
   </div>
 </div>
+            <div class="list-group" style="margin-top: -16; width: 60%;margin-left: 7.5%;" id="searchResults">
+</div>
 
 
         </div>
@@ -52,13 +54,77 @@
     }
     function search() {
         if (searching == 'Teams') {
-            window.location.href = 'http://localhost:5000/results/frc'+$('#searchBar').val()
+            window.location.href = '{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/frc'+$('#searchBar').val()
         } else {
-            window.location.href = 'http://localhost:5000/matches/2019'+$('#searchBar').val()
+            window.location.href = '{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/matches/2019'+$('#searchBar').val()
         }
     }
     $("#alert").fadeTo(5000, 500).slideUp(500, function(){
         $("#alert").slideUp(500);
+    });
+    var events = [];
+    var teams = [];
+
+    function getUnique(arr, comp) {
+
+          const unique = arr
+               .map(e => e[comp])
+
+             // store the keys of the unique objects
+            .map((e, i, final) => final.indexOf(e) === i && i)
+
+            // eliminate the dead keys & store unique objects
+            .filter(e => arr[e]).map(e => arr[e]);
+
+           return unique;
+        }
+
+    $.ajax({
+        url: "https://www.thebluealliance.com/api/v3/events/2019/simple",
+        headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+            success: function (e) {
+            events = e;
+            for (var i in events) {
+                $.ajax({
+                url: "https://www.thebluealliance.com/api/v3/event/"+events[i].key+"/teams/simple",
+                headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
+                    success: function (t) {
+                    for (var j in t) {
+                        teams.push({key:t[j].key, name:t[j].team_number.toString()+' | '+t[j].nickname})
+                    }
+
+                }});
+            }
+
+        }});
+    $("#searchBar").on("input", function() {
+                     $("#searchResults").html("");
+
+         if (searching == 'Teams') {
+             teams = getUnique(teams, "key")
+             var found = teams.filter(function (element) {
+                 return element.name.toLowerCase().includes($("#searchBar").val().toLowerCase());
+             });
+                         for (var i=0;i<10;i++){
+                if (i > found.length) {
+                    break;
+                }
+                $("#searchResults").append('<a class="list-group-item list-group-item-action" href="../results/'+found[i].key+'">'+found[i].name+'</a>')
+
+            }
+         } else {
+             var found = events.filter(function (element) {
+                 return element.name.toLowerCase().includes($("#searchBar").val().toLowerCase());
+             });
+                         for (var i=0;i<10;i++){
+                if (i > found.length) {
+                    break;
+                }
+                $("#searchResults").append('<a class="list-group-item list-group-item-action" href="../matches/'+found[i].key+'">'+found[i].name+'</a>')
+
+            }
+         }
+
     });
 
 </script>

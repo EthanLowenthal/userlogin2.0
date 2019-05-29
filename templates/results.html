@@ -34,9 +34,6 @@
                             </li>
                         </ul>
 
-
-
-
                         <div class="col-xs-2">
                             <input type="number" class="form-control bg-light text-white" onkeyup="search()" id="searchBar" placeholder="Search team numbers">
                         </div>
@@ -67,9 +64,6 @@
                                 <td></td>
                             </tr>
                             {% endif %}
-                            {% for key, value in teams.items() %}
-
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -148,8 +142,9 @@
                 <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="http://localhost:5000/results/delete" method="post">
+            <form action="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/delete" method="post">
                 <input type="hidden" id="deleteValue" name="id">
+                <input type="hidden" id="deleteRedirect" name="redirect">
                     <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Delete</button>
@@ -197,7 +192,7 @@
             for (team in teams) {
                 html += "<tr data-toggle=\"modal\" data-target=\"#modal\" onclick=\"getTeam(" + team + ")\">" +
                     "<th scope=\"row\">" + teams[team][0] + "</th>\n" +
-                    "<td><a href=\"http://localhost:5000/results/frc" + team + "\">"+team +"</a></td>\n" +
+                    "<td><a href=\"{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/frc" + team + "\">"+team +"</a></td>\n" +
                     "<td>" + teams[team][1] + "</td>\n" +
                     "<td></td>\n" +
                     "</tr>"
@@ -214,7 +209,7 @@
         for (var value in loadedTeams[team]) {
              html += "<tr>\n" +
             "<th scope=\"row\">" + loadedTeams[team][value][0] + "</th>\n" +
-            "<td><a href=\"http://localhost:5000/results/frc" + loadedTeams[team][value][1] + "\">"+loadedTeams[team][value][1] +"</a></td>\n";
+            "<td><a href=\"{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/frc" + loadedTeams[team][value][1] + "\">"+loadedTeams[team][value][1] +"</a></td>\n";
                      if (loadedTeams[team][value][2].length > 15) {
                         html += "<td data-toggle=\"tooltip\" data-placement=\"left\" title=\"" + loadedTeams[team][value][2] + "\">" + loadedTeams[team][value][2].substring(0, 15) + " [...]</td>\n"
                     } else {
@@ -291,6 +286,7 @@
     function deleteEntry(e) {
         $("#deleteModal").modal('show')
         $("#deleteValue").val(e)
+        $("#deleteRedirect").val('/results')
     }
 
     function searchTable(table) {

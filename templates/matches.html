@@ -88,6 +88,7 @@
 <script type="text/javascript">
 getEventInfo("{{ match }}");
     function getEventInfo(eventKey) {
+
             $.ajax({
                 url: "https://www.thebluealliance.com/api/v3/event/"+eventKey+"/teams/simple",
                 headers: {"X-TBA-Auth-Key":"1P043y5bGx3Rw0izZO20VjyIfU9A0e9bzdpoDzjY8wHah294RGmA7hnk2WGA1N6M"},
@@ -95,7 +96,7 @@ getEventInfo("{{ match }}");
                     var html = "";
 
                     for (var team in teams) {
-                        html += "<a href=\"http://localhost:5000/results/frc"+teams[team]["team_number"] +"\" class=\"list-group-item list-group-item-action\">" +
+                        html += "<a href=\"{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/results/frc"+teams[team]["team_number"] +"\" class=\"list-group-item list-group-item-action\">" +
                             teams[team]["team_number"] + " | " + teams[team]["nickname"]
                         "</a>\n"
                     }

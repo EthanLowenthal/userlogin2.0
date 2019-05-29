@@ -2,6 +2,9 @@ from flask import Flask, flash, redirect, render_template, request, session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from tabledef import Team
+
+import time
+import sys
 import random
 import json
 import re
@@ -12,9 +15,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
-import time
-
 import platform
+
 
 driver_path = './drivers/chromedriver_' + platform.system()
 chrome_options = Options()
@@ -76,7 +78,11 @@ def getTeam(team):
 	if not re.search("frc[0-9]+", team):
 		flash("Invalid Team Key")
 		return redirect("search")
-	return render_template("teamVeiwer.html", team=team, name=session.get('user')[1], isAdmin=session.get('user')[3])
+
+	if not session.get('logged_in'):
+		return redirect('login')
+
+	return render_template("teamVeiwer.html", team=team)
 
 @app.route('/results', methods=["GET"])
 @app.route('/results/', methods=["GET"])
@@ -102,6 +108,7 @@ def search():
 
 @app.route('/results/delete', methods=['POST'])
 def deleteResult():
+	print(request.form)
 	if not session.get('logged_in'):
 		return redirect('login')
 	s = teamSession()
@@ -110,7 +117,7 @@ def deleteResult():
 	s.commit()
 	s.close()
 	flash('Entry "{}" deleted!'.format(request.form['id']))
-	return redirect('results')
+	return redirect(request.form['redirect'])
 
 @app.route('/results/add', methods=['POST'])
 def addResult():
@@ -208,4 +215,12 @@ def check():
 	return redirect('')
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', debug=True)
+	debug = 'debug' in sys.argv
+	port = 80
+	if '-p' in sys.argv:
+		try:
+			port = int(sys.argv[sys.argv.index('-p')+1])
+		except:
+			raise Exception('-p needs a port, like -p <int> or port was not int')
+
+	app.run(port=port, host='0.0.0.0', debug=debug)

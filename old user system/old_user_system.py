@@ -147,7 +147,7 @@ def manage():
 # index.html
 # {% if isAdmin %}
 # 	<li class="nav-item">
-# 	<a class="nav-link" href="http://localhost:5000/accounts">Manage Accounts</a>
+# 	<a class="nav-link" href="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/accounts">Manage Accounts</a>
 #   </li>
 #   {% endif %}
 
@@ -524,7 +524,7 @@ def manage():
 #                     <span aria-hidden="true">&times;</span>
 #                     </button>
 #                 </div>
-#                 <form action="http://localhost:5000/accounts/delete" method="post">
+#                 <form action="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/accounts/delete" method="post">
 #                     <input type="hidden" name="id" value="{{ user[0] }}">
 #                     <input type="hidden" name="name" value="{{ user[1] }}">
 #                     <div class="modal-footer">
@@ -546,7 +546,7 @@ def manage():
 #                     <span aria-hidden="true">&times;</span>
 #                     </button>
 #                 </div>
-#                 <form action="http://localhost:5000/accounts/add" method="post">
+#                 <form action="{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/accounts/add" method="post">
 #                     <div class="modal-body">
 #                         <div class="input-group mb-3">
 #                             <div class="input-group-prepend">
@@ -714,7 +714,7 @@ def manage():
 #         }
 #
 #         function submitForm(action, id) {
-#               document.getElementById('updateform'+id).action = "http://localhost:5000/"+action;
+#               document.getElementById('updateform'+id).action = "{{ request.url.split("://")[0]+"://"+request.url.split("://")[1].split("/")[0] }}/"+action;
 #               document.getElementById('updateform'+id).submit();
 #         }
 #
